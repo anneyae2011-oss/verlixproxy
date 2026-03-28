@@ -143,6 +143,16 @@ export default function AdminDashboard() {
     }
   };
 
+  const startEdit = (p) => {
+    setEditingProvider(p);
+    setNewProvider({
+      ...p,
+      allowedModels: p.allowedModels || ""
+    });
+    setModels([]);
+    setShowAddModal(true);
+  };
+
   const deleteProvider = async (id) => {
     if (!confirm("Confirm removal of this AI node?")) return;
     const res = await fetch("/api/admin/config", {
@@ -267,8 +277,16 @@ export default function AdminDashboard() {
               <Menu size={20} />
             </button>
             <button 
-              onClick={() => { console.log("Add Provider clicked"); setEditingProvider(null); setNewProvider({ name: "", endpoint: "", apiKey: "", maxContext: 4096, rpmLimit: 0, rpdLimit: 0, allowedModels: "" }); setModels([]); setShowAddModal(true); }}
-              className="btn-v3 px-8 shadow-xl shadow-pink-100"
+              type="button"
+              id="add-provider-btn"
+              onClick={() => { 
+                console.log("Add Provider clicked!"); 
+                setEditingProvider(null); 
+                setNewProvider({ name: "", endpoint: "", apiKey: "", maxContext: 4096, rpmLimit: 0, rpdLimit: 0, allowedModels: "" }); 
+                setModels([]); 
+                setShowAddModal(true); 
+              }}
+              className="btn-v3 px-8 shadow-xl shadow-pink-100 relative z-20"
             >
               <Plus size={20} /> Add Provider
             </button>
