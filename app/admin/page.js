@@ -15,7 +15,7 @@ import {
   Globe,
   Maximize2
 } from "lucide-react";
-import { clsx } from "clsx";
+import clsx from "clsx";
 
 export default function AdminDashboard() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
