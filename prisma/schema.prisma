@@ -8,16 +8,24 @@ datasource db {
 }
 
 model Provider {
-  id           String   @id @default(cuid())
-  name         String
-  endpoint     String
-  apiKey       String
-  maxContext   Int
-  proxyKey     String   @unique
-  tokensUsed   Int      @default(0)
-  requestsMade Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  endpoint      String
+  apiKey        String
+  maxContext    Int
+  proxyKey      String   @unique
+  rpmLimit      Int      @default(0)
+  rpdLimit      Int      @default(0)
+  rpmCounter    Int      @default(0)
+  rpdCounter    Int      @default(0)
+  lastMinuteAt  DateTime @default(now())
+  lastDayAt     DateTime @default(now())
+  allowedModels String   @default("") // Comma-separated list or JSON
+  enabled       Boolean  @default(true)
+  tokensUsed    Int      @default(0)
+  requestsMade  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model AdminSession {

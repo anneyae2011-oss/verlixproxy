@@ -10,18 +10,52 @@ export async function POST(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const proxyKey = authHeader.split(" ")[1];
     const provider = await prisma.provider.findUnique({
       where: { proxyKey },
     });
 
-    if (!provider) {
-      return NextResponse.json({ error: "Invalid API Key" }, { status: 401 });
+    if (!provider || !provider.enabled) {
+      return NextResponse.json({ error: "Invalid or Disabled API Key" }, { status: 401 });
     }
 
     const body = await req.json();
+
+    // 1. Model Filtering
+    if (provider.allowedModels) {
+      const allowed = provider.allowedModels.split(",").map(m => m.trim().toLowerCase());
+      if (!allowed.includes(body.model?.toLowerCase())) {
+        return NextResponse.json({ error: `Model '${body.model}' is not allowed for this key.` }, { status: 403 });
+      }
+    }
     
-    // Enforce max context size if configured
+    // 2. Rate Limiting (RPM/RPD)
+    const now = new Date();
+    const isNewMinute = now.getTime() - provider.lastMinuteAt.getTime() > 60000;
+    const isNewDay = now.getTime() - provider.lastDayAt.getTime() > 86400000;
+
+    let { rpmCounter, rpdCounter } = provider;
+    if (isNewMinute) rpmCounter = 0;
+    if (isNewDay) rpdCounter = 0;
+
+    if (provider.rpmLimit > 0 && rpmCounter >= provider.rpmLimit) {
+      return NextResponse.json({ error: "Rate limit exceeded (RPM)" }, { status: 429 });
+    }
+    if (provider.rpdLimit > 0 && rpdCounter >= provider.rpdLimit) {
+      return NextResponse.json({ error: "Rate limit exceeded (RPD)" }, { status: 429 });
+    }
+
+    // Update counters in background (simplified)
+    await prisma.provider.update({
+      where: { id: provider.id },
+      data: {
+        rpmCounter: rpmCounter + 1,
+        rpdCounter: rpdCounter + 1,
+        lastMinuteAt: isNewMinute ? now : undefined,
+        lastDayAt: isNewDay ? now : undefined,
+      }
+    });
+
+    // 3. Enforce max context size if configured
     if (provider.maxContext > 0) {
       // Simple check: if messages total tokens exceed maxContext, return error or trim (default error for now)
       const tokens = countMessageTokens(body.messages);

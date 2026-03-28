@@ -38,7 +38,7 @@ export async function POST(req) {
   }
 
   try {
-    const { name, endpoint, apiKey, maxContext } = await req.json();
+    const { name, endpoint, apiKey, maxContext, rpmLimit, rpdLimit, allowedModels } = await req.json();
 
     if (!name || !endpoint || !apiKey) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -52,12 +52,49 @@ export async function POST(req) {
         endpoint,
         apiKey,
         maxContext: parseInt(maxContext) || 0,
+        rpmLimit: parseInt(rpmLimit) || 0,
+        rpdLimit: parseInt(rpdLimit) || 0,
+        allowedModels: allowedModels || "",
         proxyKey,
       },
     });
 
     return NextResponse.json(provider);
   } catch (error) {
+    console.error("Config POST error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+export async function PUT(req) {
+  if (!verifyAdmin(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { id, name, endpoint, apiKey, maxContext, rpmLimit, rpdLimit, allowedModels, enabled } = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing ID" }, { status: 400 });
+    }
+
+    const provider = await prisma.provider.update({
+      where: { id },
+      data: {
+        name,
+        endpoint,
+        apiKey,
+        maxContext: parseInt(maxContext) || 0,
+        rpmLimit: parseInt(rpmLimit) || 0,
+        rpdLimit: parseInt(rpdLimit) || 0,
+        allowedModels: allowedModels || "",
+        enabled: enabled !== undefined ? enabled : true,
+      },
+    });
+
+    return NextResponse.json(provider);
+  } catch (error) {
+    console.error("Config PUT error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
