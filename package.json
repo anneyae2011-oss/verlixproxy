@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate"
@@ -17,10 +17,8 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.363.0",
     "next": "latest",
+    "prisma": "^5.11.0",
     "react": "latest",
     "react-dom": "latest"
-  },
-  "devDependencies": {
-    "prisma": "^5.11.0"
   }
 }
