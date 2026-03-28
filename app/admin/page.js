@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 
-export default function V3AdminDashboard() {
+export default function AdminDashboard() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(true);
