@@ -21,7 +21,8 @@ import {
   Activity,
   Shield,
   RefreshCcw,
-  AlertCircle
+  AlertCircle,
+  Key
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -266,7 +267,7 @@ export default function AdminDashboard() {
               <Menu size={20} />
             </button>
             <button 
-              onClick={() => { setEditingProvider(null); setNewProvider({ name: "", endpoint: "", apiKey: "", maxContext: 4096, rpmLimit: 0, rpdLimit: 0, allowedModels: "" }); setModels([]); setShowAddModal(true); }}
+              onClick={() => { console.log("Add Provider clicked"); setEditingProvider(null); setNewProvider({ name: "", endpoint: "", apiKey: "", maxContext: 4096, rpmLimit: 0, rpdLimit: 0, allowedModels: "" }); setModels([]); setShowAddModal(true); }}
               className="btn-v3 px-8 shadow-xl shadow-pink-100"
             >
               <Plus size={20} /> Add Provider
