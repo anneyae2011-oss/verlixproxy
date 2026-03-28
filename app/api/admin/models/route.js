@@ -40,21 +40,48 @@ export async function GET(req) {
   }
 
   try {
-    const upstreamUrl = `${provider.endpoint.replace(/\/$/, "")}/models`;
-    const res = await fetch(upstreamUrl, {
+    let baseUrl = provider.endpoint.trim().replace(/\/$/, "");
+    
+    // Intelligent endpoint detection
+    // If it doesn't end in /v1, and we're talking to an OpenAI-compatible API,
+    // we might need to append /v1/models or just /models.
+    // We'll try to find the standard "models" path.
+    let modelsUrl = `${baseUrl}/models`;
+    
+    console.log(`[Models API] Attempting to fetch models from: ${modelsUrl}`);
+
+    const res = await fetch(modelsUrl, {
+      method: "GET",
       headers: {
         "Authorization": `Bearer ${provider.apiKey}`,
+        "Content-Type": "application/json",
       },
+      // Short timeout to avoid hanging the build or UI
+      signal: AbortSignal.timeout(10000), 
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Failed to fetch models from upstream" }, { status: res.status });
+      console.error(`[Models API] Upstream error: ${res.status} ${res.statusText}`);
+      // Try fallback if the first one failed and didn't include /v1
+      if (!baseUrl.endsWith("/v1")) {
+        const fallbackUrl = `${baseUrl}/v1/models`;
+        console.log(`[Models API] Retrying with fallback: ${fallbackUrl}`);
+        const fallbackRes = await fetch(fallbackUrl, {
+          headers: { "Authorization": `Bearer ${provider.apiKey}` },
+          signal: AbortSignal.timeout(10000),
+        });
+        if (fallbackRes.ok) {
+          const data = await fallbackRes.json();
+          return NextResponse.json(data);
+        }
+      }
+      return NextResponse.json({ error: `Upstream returned ${res.status}: ${res.statusText}` }, { status: res.status });
     }
 
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Models fetch error:", error);
-    return NextResponse.json({ error: "Could not connect to provider endpoint" }, { status: 500 });
+    console.error("[Models API] Connection error:", error.message);
+    return NextResponse.json({ error: `Connection failed: ${error.message}` }, { status: 500 });
   }
 }
