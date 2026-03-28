@@ -16,9 +16,9 @@
     "js-tiktoken": "^1.0.10",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.363.0",
-    "next": "latest",
+    "next": "^15.0.0",
     "prisma": "^5.11.0",
-    "react": "latest",
-    "react-dom": "latest"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }
